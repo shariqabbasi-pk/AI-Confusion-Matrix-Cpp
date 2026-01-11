@@ -1,42 +1,73 @@
-# AI-Confusion-Matrix-Cpp
-Confusion Matrix and Evaluation Metrics in Python
+# AI-Confusion-Matrix
 # Confusion Matrix and Evaluation Metrics (Python)
 ## Project Description
 This project evaluates a binary classification model using a confusion matrix
 and calculates accuracy, precision, recall, and F1-score.
 
-# Confusion Matrix and Evaluation Metrics in Python
+# Import libraries
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    confusion_matrix,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    classification_report
+)
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-# Random dataset (Actual vs Predicted labels)
-actual = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]
-predicted = [1, 0, 0, 1, 0, 1, 1, 0, 1, 0]
+# Load dataset
+data = load_breast_cancer()
+X = data.data
+y = data.target
 
-TP = TN = FP = FN = 0
+# Train-test split (randomized)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42
+)
 
-for i in range(len(actual)):
-    if actual[i] == 1 and predicted[i] == 1:
-        TP += 1
-    elif actual[i] == 0 and predicted[i] == 0:
-        TN += 1
-    elif actual[i] == 0 and predicted[i] == 1:
-        FP += 1
-    elif actual[i] == 1 and predicted[i] == 0:
-        FN += 1
+# Initialize and train model
+model = LogisticRegression(max_iter=10000)
+model.fit(X_train, y_train)
 
-print("Confusion Matrix")
-print("----------------")
-print("TP:", TP, "FP:", FP)
-print("FN:", FN, "TN:", TN)
+# Predictions
+y_pred = model.predict(X_test)
 
-accuracy = (TP + TN) / (TP + TN + FP + FN)
-precision = TP / (TP + FP)
-recall = TP / (TP + FN)
-f1_score = 2 * (precision * recall) / (precision + recall)
+# Confusion matrix
+cm = confusion_matrix(y_test, y_pred)
 
-print("\nEvaluation Metrics")
-print("------------------")
-print("Accuracy :", accuracy)
+# Evaluation metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+
+# Print results
+print("Confusion Matrix:\n", cm)
+print("\nAccuracy:", accuracy)
 print("Precision:", precision)
-print("Recall   :", recall)
-print("F1-Score :", f1_score)
+print("Recall:", recall)
+print("F1 Score:", f1)
 
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred))
+
+# Plot confusion matrix
+plt.figure(figsize=(6, 4))
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    xticklabels=["Malignant", "Benign"],
+    yticklabels=["Malignant", "Benign"]
+)
+plt.xlabel("Predicted Label")
+plt.ylabel("True Label")
+plt.title("Confusion Matrix")
+plt.show()
